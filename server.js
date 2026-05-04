@@ -119,6 +119,8 @@ async function checkAndTrackScan(req, res) {
 // Your app's brain — handles all API calls
 // ============================================
 
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -219,6 +221,7 @@ app.post('/upgrade', authenticate, async (req, res) => {
 // ============================================
 app.post('/check-url', authenticate, async (req, res) => {
   const { url } = req.body;
+console.log("API KEY:", process.env.VIRUSTOTAL_API_KEY);
 
   if (!url) {
     return res.status(400).json({ error: 'Please provide a URL.' });
@@ -252,7 +255,7 @@ app.post('/check-url', authenticate, async (req, res) => {
     const analysisId = submitResponse.data.data.id;
 
     // Step 2: Wait 4 seconds for VirusTotal to finish scanning
-    await new Promise(resolve => setTimeout(resolve, 4000));
+    await new Promise(resolve => setTimeout(resolve, 8000));
 
     // Step 3: Fetch the scan results
     const resultResponse = await axios.get(
@@ -382,21 +385,11 @@ app.post('/check-phone', authenticate, async (req, res) => {
     else if (trustScore < 70) verdict = 'SUSPICIOUS';
     else verdict = 'LIKELY SAFE';
 
-    res.json({
-      trustScore,
-      valid: info.valid,
-      country: info.country_name || 'Unknown',
-      carrier: info.carrier || 'Unknown',
-      lineType: info.line_type || 'Unknown',
-      flags,
-      verdict
-    });
-
      const result = {
       trustScore,
       verdict,
       flags: flags || [],
-      details: PLANS[req.plan].showDetailedFlags ? details || null : null,
+      details: null,
       usage: {
         scansToday: usage.scansToday,
         limit: usage.limit,
@@ -518,7 +511,7 @@ app.post('/check-username', authenticate, async (req, res) => {
   trustScore,
   verdict,
   flags: flags || [],
-  details: PLANS[req.plan].showDetailedFlags ? details || null : null,
+  details: null,
   usage: {
     scansToday: usage.scansToday,
     limit: usage.limit,
@@ -541,7 +534,7 @@ if (req.user) {
 }
 
 res.json(result);
- 
+});
 
 // ============================================
 // START THE SERVER
