@@ -3,19 +3,23 @@
 // ============================================
 const admin = require('firebase-admin');
 
-if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-  console.error('ERROR: FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
-  console.error('Set it in the Railway dashboard with your service account JSON.');
-  process.exit(1);
+let db;
+
+function initFirebase() {
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.error('ERROR: FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
+    console.error('Set it in the Railway dashboard with your service account JSON.');
+    process.exit(1);
+  }
+
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+
+  db = admin.firestore();
 }
-
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-const db = admin.firestore(); // This is your database
 // ============================================
 // PLAN RULES — Edit these any time
 // ============================================
@@ -547,6 +551,9 @@ res.json(result);
 // START THE SERVER
 // ============================================
 const PORT = process.env.PORT || 5000;
+
+initFirebase();
+
 app.listen(PORT, () => {
   console.log(`✅ TrustShield backend running on http://localhost:${PORT}`);
   console.log(`📋 Test it: http://localhost:${PORT}`);
