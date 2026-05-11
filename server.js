@@ -2,7 +2,14 @@
 // FIREBASE SETUP
 // ============================================
 const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey.json');
+
+if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+  console.error('ERROR: FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
+  console.error('Set it in the Railway dashboard with your service account JSON.');
+  process.exit(1);
+}
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
